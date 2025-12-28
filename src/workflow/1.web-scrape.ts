@@ -4,7 +4,12 @@ import { load } from "cheerio";
 interface ScraperResult {
 	count: number;
 	images: string[];
-	posts: Array<{ title: string; link: string; image?: string; description?: string }>;
+	posts: Array<{
+		title: string;
+		link: string;
+		image?: string;
+		description?: string;
+	}>;
 }
 
 export const name = "lombait";
@@ -24,7 +29,12 @@ export async function scrape(): Promise<ScraperResult> {
 	const $ = load(body);
 
 	const imagesArr: string[] = [];
-	const posts: Array<{ title: string; link: string; image?: string; description?: string }> = [];
+	const posts: Array<{
+		title: string;
+		link: string;
+		image?: string;
+		description?: string;
+	}> = [];
 
 	$("#Blog1 .blog-posts .date-outer .thumb a").each((_, el) => {
 		if (imagesArr.length >= IMAGE_LIMIT) {
@@ -40,7 +50,8 @@ export async function scrape(): Promise<ScraperResult> {
 		let rawUrl = match[1].replace(/['"]/g, "").trim();
 
 		try {
-			const normalizeImageSize = (u: string) => u.replace(/\/s\d+(-c)?\//, "/s1600/");
+			const normalizeImageSize = (u: string) =>
+				u.replace(/\/s\d+(-c)?\//, "/s1600/");
 			const abs = new URL(rawUrl, BASE_URL).toString();
 			imagesArr.push(normalizeImageSize(abs));
 		} catch (e) {
@@ -69,7 +80,9 @@ export async function scrape(): Promise<ScraperResult> {
 		posts.map(async (p) => {
 			if (!p.link) return;
 			try {
-				const r = await fetch(p.link, { headers: { "User-Agent": "Mozilla/5.0" } });
+				const r = await fetch(p.link, {
+					headers: { "User-Agent": "Mozilla/5.0" },
+				});
 				if (!r.ok) return;
 				const html = await r.text();
 				const $d = load(html);
@@ -81,12 +94,11 @@ export async function scrape(): Promise<ScraperResult> {
 						.replace(/\s+/g, " ")
 						.replace(/\u00a0/g, " ")
 						.trim();
-
 				}
 			} catch (e) {
 				// ignore per-post errors
 			}
-		})
+		}),
 	);
 
 	return {

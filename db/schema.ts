@@ -33,7 +33,6 @@ export const competitions = pgTable("competitions", {
 	pricing: jsonb().$type<number | number[] | null>(),
 	contact: jsonb().$type<number | number[] | null>(),
 
-
 	prize: text().default("0"), // hadiah lomba dalam Rp
 	guideUrl: text(), // url panduan lomba
 	registrationUrl: text().notNull(), // url pendaftaran

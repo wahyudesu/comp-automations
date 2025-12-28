@@ -1,4 +1,3 @@
-
 import postgres from "postgres";
 
 export async function saveToDb(files: any[], env: any) {
@@ -8,8 +7,8 @@ export async function saveToDb(files: any[], env: any) {
 	}
 
 	const sql = postgres(env.DATABASE_URL, {
-		ssl: 'require',
-		max: 1 // limit connections for serverless
+		ssl: "require",
+		max: 1, // limit connections for serverless
 	});
 
 	try {
@@ -20,7 +19,7 @@ export async function saveToDb(files: any[], env: any) {
 			// Prefer AI data, fallback to scraped data
 			const title = ai.title || post.title;
 			const description = ai.description || post.description || "";
-			const organizer = ai.organizer || 'Unknown';
+			const organizer = ai.organizer || "Unknown";
 			const parseDate = (dateStr: any) => {
 				if (!dateStr) return new Date();
 				const d = new Date(dateStr);
@@ -30,7 +29,7 @@ export async function saveToDb(files: any[], env: any) {
 			const startDate = parseDate(ai.startDate);
 			const endDate = parseDate(ai.endDate);
 			const registrationUrl = ai.registrationUrl || post.link;
-			const prize = ai.prize || '0';
+			const prize = ai.prize || "0";
 			const poster = post.image || "";
 
 			await sql`

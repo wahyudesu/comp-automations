@@ -23,40 +23,50 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 			step.do("Step 1: IG Scrape", async () => {
 				const { scrape } = await import("./workflow/1.ig-scrape");
 				return await scrape();
-			})
+			}),
 		]);
 
 		// Combined results from Step 1
-		const allScrapedPosts = [...(webScrapeResult?.posts || []), ...(igScrapeResult?.posts || [])];
+		const allScrapedPosts = [
+			...(webScrapeResult?.posts || []),
+			...(igScrapeResult?.posts || []),
+		];
 
 		// Step 1.5: Deduplication (Optional but kept from previous version)
-		const filteredPosts = await step.do("Deduplicate Scraped Posts", async () => {
-			if (!this.env.DATABASE_URL) {
-				console.warn("DATABASE_URL not set, skipping deduplication");
-				return allScrapedPosts;
-			}
-			if (allScrapedPosts.length === 0) return [];
+		const filteredPosts = await step.do(
+			"Deduplicate Scraped Posts",
+			async () => {
+				if (!this.env.DATABASE_URL) {
+					console.warn("DATABASE_URL not set, skipping deduplication");
+					return allScrapedPosts;
+				}
+				if (allScrapedPosts.length === 0) return [];
 
-			const links = allScrapedPosts.map((p: any) => p.link).filter(Boolean);
-			if (links.length === 0) return allScrapedPosts;
+				const links = allScrapedPosts.map((p: any) => p.link).filter(Boolean);
+				if (links.length === 0) return allScrapedPosts;
 
-			const sql = postgres(this.env.DATABASE_URL);
-			try {
-				const existing = await sql`
+				const sql = postgres(this.env.DATABASE_URL);
+				try {
+					const existing = await sql`
 					SELECT "registrationUrl" FROM competitions 
 					WHERE "registrationUrl" IN ${sql(links)}
 				`;
-				const existingUrls = new Set(existing.map(r => r.registrationUrl));
-				const newPosts = allScrapedPosts.filter((p: any) => !existingUrls.has(p.link));
-				console.log(`Deduplication: Scraped ${allScrapedPosts.length}, Found ${existing.length} existing, Processing ${newPosts.length} new.`);
-				return newPosts;
-			} catch (e) {
-				console.error("Deduplication check failed:", e);
-				return allScrapedPosts;
-			} finally {
-				await sql.end();
-			}
-		});
+					const existingUrls = new Set(existing.map((r) => r.registrationUrl));
+					const newPosts = allScrapedPosts.filter(
+						(p: any) => !existingUrls.has(p.link),
+					);
+					console.log(
+						`Deduplication: Scraped ${allScrapedPosts.length}, Found ${existing.length} existing, Processing ${newPosts.length} new.`,
+					);
+					return newPosts;
+				} catch (e) {
+					console.error("Deduplication check failed:", e);
+					return allScrapedPosts;
+				} finally {
+					await sql.end();
+				}
+			},
+		);
 
 		// Step 2: Upload images to R2
 		const uploadResult = await step.do("Step 2: Upload to R2", async () => {
@@ -96,7 +106,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 			step2: uploadResult.length,
 			step3: insertResult,
 			step4: "deferred",
-			step5: "deferred"
+			step5: "deferred",
 		};
 	}
 }

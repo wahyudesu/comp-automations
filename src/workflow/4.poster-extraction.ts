@@ -1,15 +1,28 @@
-import { Mistral } from '@mistralai/mistralai';
+import { Mistral } from "@mistralai/mistralai";
+import { responseFormatFromZodObject } from "@mistralai/mistralai/extra/structChat.js";
+import { CompetitionSchema } from "../competition-schema";
 
-const apiKey = process.env.MISTRAL_API_KEY;
+const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
 
-const client = new Mistral({apiKey: apiKey});
+const poster_url =
+	"https://objectcompetition.wahyuikbal.com/1766951802939-infest_competition_2026.jpg";
 
-const ocrResponse = await client.ocr.process({
-    model: "mistral-ocr-latest",
-    document: {
-        type: "image_url",
-        imageUrl: "https://raw.githubusercontent.com/mistralai/cookbook/refs/heads/main/mistral/ocr/receipt.png",
-    },
-    // tableFormat: "markdown",
-    includeImageBase64: true
-});
+async function processDocument() {
+	try {
+		const response = await client.ocr.process({
+			model: "mistral-ocr-latest",
+			document: {
+				type: "image_url",
+				imageUrl: poster_url,
+			},
+			bboxAnnotationFormat: responseFormatFromZodObject(CompetitionSchema),
+			includeImageBase64: true,
+		});
+
+		console.log(response);
+	} catch (error) {
+		console.error("Error processing document:", error);
+	}
+}
+
+processDocument();

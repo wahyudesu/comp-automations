@@ -7,9 +7,7 @@
 	"name": "web-automations-3",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-12-25",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
+	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
 		"enabled": true
 	},
@@ -24,7 +22,7 @@
 		{
 			"binding": "MY_BUCKET",
 			"bucket_name": "bucket-competition",
-			"remote": true,
+			"remote": true
 		}
 	]
 	/**

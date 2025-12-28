@@ -9,6 +9,7 @@
 		"cf-typegen": "wrangler types"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.3.10",
 		"typescript": "^5.0.4",
 		"wrangler": "^4.54.0"
 	},
