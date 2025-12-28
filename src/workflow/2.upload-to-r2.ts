@@ -39,7 +39,7 @@ export async function uploadToR2(posts: any[], env: any) {
 
                     // For now, let's store it as a custom-scheme or just the filename to indicate success.
                     // Actually, let's try to infer or use a dummy domain
-                    imageUrl = `https://pub-5d1e494ec7b74a42aac4a760c57e7035.r2.dev/${filename}`;
+                    imageUrl = `objectcompetition.wahyuikbal.com/${filename}`;
                 }
             } catch (e) {
                 console.error(`Failed to upload image for ${post.title}:`, e);

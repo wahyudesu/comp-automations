@@ -26,12 +26,19 @@ export async function insertToDb(posts: any[], env: any) {
             const institutions = ai.institutions || [];
 
             // Handle dates
-            const startDate = ai.startDate ? new Date(ai.startDate) : new Date();
-            const endDate = ai.endDate ? new Date(ai.endDate) : new Date();
+            const parseDate = (dateStr: any) => {
+                if (!dateStr) return new Date();
+                const d = new Date(dateStr);
+                return isNaN(d.getTime()) ? new Date() : d;
+            };
+
+            const startDate = parseDate(ai.startDate);
+            const endDate = parseDate(ai.endDate);
 
             // Handle other fields
             const registrationUrl = ai.registrationUrl || post.link;
             const poster = post.image || "";
+            const urlsource = post.link || "";
             const level = ai.level || [];
             const format = ai.format || 'Online';
             const participationType = ai.participationType || 'Individual';
@@ -61,7 +68,8 @@ export async function insertToDb(posts: any[], env: any) {
                     "guideUrl",
                     "registrationUrl",
                     location,
-                    "socialMedia"
+                    "socialMedia",
+                    urlsource
                 ) VALUES (
                     ${title},
                     ${description},
@@ -80,7 +88,8 @@ export async function insertToDb(posts: any[], env: any) {
                     ${guideUrl},
                     ${registrationUrl},
                     ${location},
-                    ${sql.json(socialMedia)}
+                    ${sql.json(socialMedia)},
+                    ${urlsource}
                 )
             `;
             console.log(`Saved post: ${title}`);

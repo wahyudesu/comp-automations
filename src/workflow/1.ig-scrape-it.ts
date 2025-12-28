@@ -3,7 +3,7 @@ import { InstagramScraper, ScrapeError } from '@aduptive/instagram-scraper';
 const IMAGE_LIMIT = 4; // ubah sesuai kebutuhan
 
 export async function scrape() {
-  const usernames = ['infolomba.indonesia.id', 'lomba_mahasiswa', 'infolomba']
+  const usernames = ['infolombait', 'csrelatedcompetitions']
   const scraper = new InstagramScraper({
     maxRetries: 2,
     minDelay: 2000,

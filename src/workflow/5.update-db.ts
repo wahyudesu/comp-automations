@@ -21,8 +21,14 @@ export async function saveToDb(files: any[], env: any) {
 			const title = ai.title || post.title;
 			const description = ai.description || post.description || "";
 			const organizer = ai.organizer || 'Unknown';
-			const startDate = ai.startDate ? new Date(ai.startDate) : new Date();
-			const endDate = ai.endDate ? new Date(ai.endDate) : new Date();
+			const parseDate = (dateStr: any) => {
+				if (!dateStr) return new Date();
+				const d = new Date(dateStr);
+				return isNaN(d.getTime()) ? new Date() : d;
+			};
+
+			const startDate = parseDate(ai.startDate);
+			const endDate = parseDate(ai.endDate);
 			const registrationUrl = ai.registrationUrl || post.link;
 			const prize = ai.prize || '0';
 			const poster = post.image || "";
