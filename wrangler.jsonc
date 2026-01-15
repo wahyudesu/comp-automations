@@ -6,7 +6,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "web-automations-3",
 	"main": "src/index.ts",
-	"compatibility_date": "2025-12-25",
+	"compatibility_date": "2025-12-10",
 	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
 		"enabled": true
@@ -24,7 +24,10 @@
 			"bucket_name": "bucket-competition",
 			"remote": true
 		}
-	]
+	],
+	// "triggers": {
+	// 	"crons": ["0 */6 * * *"]
+	// }
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

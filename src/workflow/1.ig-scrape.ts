@@ -1,9 +1,15 @@
 import { InstagramScraper, ScrapeError } from "@aduptive/instagram-scraper";
 
 const IMAGE_LIMIT = 4; // ubah sesuai kebutuhan
+const IG_LOMBA = [
+  "infolomba.indonesia.id",
+  "lomba_mahasiswa",
+  "infolomba",
+  "infolombamahasiswa.id",
+];
 
 export async function scrape() {
-	const usernames = ["infolomba.indonesia.id", "lomba_mahasiswa", "infolomba"];
+	const usernames = IG_LOMBA;
 	const scraper = new InstagramScraper({
 		maxRetries: 2,
 		minDelay: 2000,
@@ -13,6 +19,7 @@ export async function scrape() {
 	});
 
 	const allPosts = [];
+	const errors: { username: string; error: string } = [];
 
 	for (const username of usernames) {
 		try {
@@ -23,38 +30,69 @@ export async function scrape() {
 
 			const results = await scraper.getPosts(username, IMAGE_LIMIT);
 			if (results.success && results.posts) {
-				console.log(
-					`\nUsername: ${username}, Posts collected: ${results.posts.length}`,
+				// Filter out posts without required data
+				const validPosts = results.posts.filter(
+					(post) => post.display_url && post.url,
 				);
 
-				for (const post of results.posts) {
+				if (validPosts.length !== results.posts.length) {
+					console.log(
+						`\n⚠️  ${username}: Filtered ${results.posts.length - validPosts.length} incomplete posts`,
+					);
+				}
+
+				console.log(
+					`\n✅ ${username}: ${validPosts.length}/${results.posts.length} valid posts`,
+				);
+
+				for (const post of validPosts) {
 					allPosts.push({
 						title: post.caption?.split("\n")[0] || `IG Post from ${username}`,
 						link: post.url,
 						image: post.display_url,
-						description: post.caption,
+						description: post.caption || "",
 						source: "instagram",
 						username: username,
 					});
 				}
 			} else {
-				console.log(`${username}: ${results.error}`);
+				const errorMsg = results.error || "Unknown error";
+				errors.push({ username, error: errorMsg });
+				console.log(`\n❌ ${username}: ${errorMsg}`);
 			}
 		} catch (error) {
+			let errorMsg = "Unknown error";
 			if (error instanceof ScrapeError) {
-				console.error(
-					`Scraping error: ${(error as ScrapeError).message} (${(error as ScrapeError).code})`,
-				);
+				errorMsg = `${(error as ScrapeError).message} (${(error as ScrapeError).code})`;
 			} else if (error instanceof Error) {
-				console.error("Unknown error:", error.message);
-			} else {
-				console.error("Unknown error:", error);
+				errorMsg = error.message;
 			}
+			errors.push({ username, error: errorMsg });
+			// Silent skip - only log summary at the end
 		}
+	}
+
+	// Summary log
+	if (errors.length > 0) {
+		console.log(
+			`\n⚠️  Skipped ${errors.length} account(s): ${errors.map((e) => e.username).join(", ")}`,
+		);
 	}
 
 	return {
 		count: allPosts.length,
 		posts: allPosts,
 	};
+}
+
+// Run directly when executed with bun
+if (import.meta.main) {
+	scrape()
+		.then((result) => {
+			console.log(`\n📊 Total posts collected: ${result.count}`);
+			// Save to JSON
+			Bun.write("ig-scrape-results.json", JSON.stringify(result.posts, null, 2));
+			console.log("💾 Results saved to ig-scrape-results.json");
+		})
+		.catch(console.error);
 }

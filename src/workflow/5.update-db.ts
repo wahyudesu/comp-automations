@@ -1,6 +1,6 @@
 import postgres from "postgres";
 
-export async function saveToDb(files: any[], env: any) {
+export async function saveToDb(posts: any[], env: any) {
 	if (!env.DATABASE_URL) {
 		console.error("DATABASE_URL is not set");
 		return;
@@ -12,58 +12,57 @@ export async function saveToDb(files: any[], env: any) {
 	});
 
 	try {
-		console.log(`Attempting to save ${files.length} posts to DB`);
-		for (const post of files) {
-			const ai = post.aiAnalysis || {};
+		console.log(`Attempting to update ${posts.length} posts in DB`);
+		let updateCount = 0;
 
-			// Prefer AI data, fallback to scraped data
-			const title = ai.title || post.title;
-			const description = ai.description || post.description || "";
-			const organizer = ai.organizer || "Unknown";
-			const parseDate = (dateStr: any) => {
-				if (!dateStr) return new Date();
-				const d = new Date(dateStr);
-				return isNaN(d.getTime()) ? new Date() : d;
-			};
+		for (const post of posts) {
+			const ai = post.aiAnalysis;
 
-			const startDate = parseDate(ai.startDate);
-			const endDate = parseDate(ai.endDate);
-			const registrationUrl = ai.registrationUrl || post.link;
-			const prize = ai.prize || "0";
-			const poster = post.image || "";
+			// Skip if no AI analysis
+			if (!ai) {
+				console.log(`Skipping ${post.title} - no AI analysis`);
+				continue;
+			}
 
+			// Build update object with only non-null AI fields
+			const updates: any = {};
+			if (ai.title) updates.title = ai.title;
+			if (ai.description) updates.description = ai.description;
+			if (ai.organizer) updates.organizer = sql.json(ai.organizer);
+			if (ai.categories) updates.categories = sql.json(ai.categories);
+			if (ai.level) updates.level = sql.json(ai.level);
+			if (ai.startDate) updates.startDate = ai.startDate;
+			if (ai.endDate) updates.endDate = ai.endDate;
+			if (ai.format) updates.format = ai.format;
+			if (ai.participationType) updates.participationType = ai.participationType;
+			if (ai.pricing) updates.pricing = sql.json(ai.pricing);
+			if (ai.contact) updates.contact = sql.json(ai.contact);
+			if (ai.prizePool) updates.prizePool = ai.prizePool;
+			if (ai.benefits) updates.benefits = ai.benefits;
+			if (ai.guideUrl) updates.guideUrl = ai.guideUrl;
+			if (ai.location) updates.location = ai.location;
+			if (ai.socialMedia) updates.socialMedia = sql.json(ai.socialMedia);
+
+			// Always update status to 'whatsapp' after AI extraction
+			updates.status = 'whatsapp';
+
+			// Update by id
 			await sql`
-				INSERT INTO competitions (
-					title,
-					description,
-					organizer,
-					"startDate",
-					"endDate",
-					status,
-					"registrationUrl",
-					prize,
-					poster
-				) VALUES (
-					${title},
-					${description},
-					${organizer},
-					${startDate},
-					${endDate},
-					'draft',
-					${registrationUrl},
-					${prize},
-					${poster}
-				)
+				UPDATE competitions
+				SET ${sql(updates)}
+				WHERE id = ${post.id}
 			`;
-			console.log(`Saved post: ${title}`);
+
+			updateCount++;
+			console.log(`Updated post: ${ai.title || post.title} (AI extracted)`);
 		}
-		console.log("All posts saved successfully");
+
+		console.log(`Successfully updated ${updateCount} posts in database`);
+		return { success: true, count: updateCount };
 	} catch (error) {
-		console.error("Error saving to DB:", error);
+		console.error("Error updating DB:", error);
 		throw error;
 	} finally {
 		await sql.end();
 	}
-
-	return { success: true, count: files.length };
 }

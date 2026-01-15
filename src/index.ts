@@ -12,6 +12,15 @@ type Params = {
 	metadata: Record<string, string>;
 };
 
+// export type WorkflowStepConfig = {
+//   retries?: {
+//     limit: number;
+//     delay: string | number;
+//     backoff?: WorkflowBackoff;
+//   };
+//   timeout?: string | number;
+// };
+
 export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 	async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
 		// Step 1: Parallel Scrape (Web and IG)
@@ -82,35 +91,41 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 			return await insertToDb(uploadResult, this.env);
 		});
 
-		// Step 4: OCR Image (Later)
-		// We implement the structure but can skip or return result if needed
-		const ocrResult = await step.do("Step 4: OCR Image", async () => {
-			// Currently placeholder as requested: "4 dan 5 itu nanti aja"
-			// But since we want the structure:
-			// if (insertResult.count === 0) return [];
-			// const { analyzeImages } = await import("./workflow/4.ocr-image");
-			// return await analyzeImages(uploadResult, this.env);
-			console.log("Step 4: OCR Image (Skipped as requested)");
-			return [];
+		// Step 4: Data Extraction (fetch from DB, extract AI)
+		const ocrResult = await step.do("Step 4: Data Extraction", async () => {
+			if (!("registrationUrls" in insertResult) || !Array.isArray(insertResult.registrationUrls) || insertResult.registrationUrls.length === 0) return [];
+			const { extractData } = await import("./workflow/4.data-extraction");
+			return await extractData(insertResult.registrationUrls, this.env);
 		});
 
-		// Step 5: Update DB (Later)
+		// Step 5: Update DB (UPDATE with AI data)
 		const updateResult = await step.do("Step 5: Update DB", async () => {
-			// Currently placeholder as requested: "4 dan 5 itu nanti aja"
-			console.log("Step 5: Update DB (Skipped as requested)");
-			return { success: true, count: 0 };
+			if (ocrResult.length === 0) return { success: true, count: 0 };
+			const { saveToDb } = await import("./workflow/5.update-db");
+			return await saveToDb(ocrResult, this.env) || { success: true, count: 0 };
 		});
 
 		return {
 			step1: { web: webScrapeResult?.count, ig: igScrapeResult?.count },
 			step2: uploadResult.length,
 			step3: insertResult,
-			step4: "deferred",
-			step5: "deferred",
+			step4: ocrResult,
+			step5: updateResult,
 		};
 	}
 }
 export default {
+	async scheduled(
+		controller: ScheduledController,
+		env: Env,
+		ctx: ExecutionContext,
+	) {
+		// Triggered by cron every 6 hours
+		console.log("Cron triggered - starting workflow");
+		const instance = await env.MY_WORKFLOW.create();
+		console.log(`Workflow started with ID: ${instance.id}`);
+	},
+
 	async fetch(req: Request, env: Env): Promise<Response> {
 		let url = new URL(req.url);
 

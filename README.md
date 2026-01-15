@@ -7,6 +7,8 @@
 - mistral ocr
 - cloudflare workflows
 
+rules:
+
 ## Data scrape
 
 web: gambar, 
@@ -72,3 +74,14 @@ flowchart TD
     classDef manual stroke:#B44A5C,color:#fff
 
 ```
+
+## Yg perlu diperhatikan
+- Ini adalah sistem workflow automasi yang scrapping informasi lomba dari web dan instagram untuk kemudian disimpan ke dalam r2 bucket cloudflare dan database postgres yang telah didefinisikan schemanya, nantinya data tersebut akan digunakan untuk broadcasting dan sebagai database aplikasi katalog lomba
+- Admin panel digunakan untuk mengecek dan mengupdate database postgres, yang CRUD nya juga dikorelasikan dengan cloudflare r2, mengirim pesan ke channel WA
+- CRON nya berjalan tiap 12 jam sekali, selanjutnya 6 jam sekali
+- Mekanisme data ekstraction 
+- Mekanisme pengecekan insert db nya dari url instagram jika sama,  
+- Tambahkan mekanisme edit gambar supaya ga sama sama amad sama data yg ada di instagram
+- Human review diperlukan untuk mengecek apakah ada lomba yang duplikat, mengecek informasi lomba apakah sudah benar atau belum, mengirim info ke WA channel, 
+- notif tiap data yang masuk dikirim ke grup wa
+- 
