@@ -1,0 +1,52 @@
+{
+  "requestsFinished": 0,
+  "requestsFailed": 1,
+  "requestsRetries": 1,
+  "requestsFailedPerMinute": 0,
+  "requestsFinishedPerMinute": 0,
+  "requestMinDurationMillis": null,
+  "requestMaxDurationMillis": 0,
+  "requestTotalFailedDurationMillis": 31051,
+  "requestTotalFinishedDurationMillis": 0,
+  "crawlerStartedAt": "2026-01-15T14:01:33.827Z",
+  "crawlerFinishedAt": null,
+  "statsPersistedAt": "2026-01-15T16:28:08.889Z",
+  "crawlerRuntimeMillis": 8795263,
+  "crawlerLastStartTimestamp": 1768485693626,
+  "requestRetryHistogram": [
+    null,
+    null,
+    null,
+    1
+  ],
+  "statsId": 0,
+  "requestAvgFailedDurationMillis": 31051,
+  "requestAvgFinishedDurationMillis": null,
+  "requestTotalDurationMillis": 31051,
+  "requestsTotal": 1,
+  "requestsWithStatusCode": {
+    "200": 4
+  },
+  "errors": {
+    "/home/wahyudesu/Workspace/comp-automations/ig.js:7:36": {
+      "missing error code": {
+        "TimeoutError": {
+          "content: Timeout 30000ms exceeded.": {
+            "count": 1
+          }
+        }
+      }
+    }
+  },
+  "retryErrors": {
+    "/home/wahyudesu/Workspace/comp-automations/ig.js:7:36": {
+      "missing error code": {
+        "TimeoutError": {
+          "content: Timeout 30000ms exceeded.": {
+            "count": 3
+          }
+        }
+      }
+    }
+  }
+}

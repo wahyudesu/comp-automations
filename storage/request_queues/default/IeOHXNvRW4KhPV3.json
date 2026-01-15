@@ -1,0 +1,9 @@
+{
+	"id": "IeOHXNvRW4KhPV3",
+	"json": "{\"id\":\"IeOHXNvRW4KhPV3\",\"url\":\"https://www.instagram.com/techfusion.id/\",\"loadedUrl\":\"https://www.instagram.com/techfusion.id/\",\"uniqueKey\":\"https://www.instagram.com/techfusion.id\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":3,\"errorMessages\":[\"content: Timeout 30000ms exceeded.\\nCall log:\\n\\u001b[2m  - waiting for getByText(/[0-9,.mMkK]+ followers/)\\u001b[22m\\n\\n    at <anonymous> (/home/wahyudesu/Workspace/comp-automations/ig.js:7:36)\\n    at processTicksAndRejections (native:7:39)\",\"content: Timeout 30000ms exceeded.\\nCall log:\\n\\u001b[2m  - waiting for getByText(/[0-9,.mMkK]+ followers/)\\u001b[22m\\n\\n    at <anonymous> (/home/wahyudesu/Workspace/comp-automations/ig.js:7:36)\\n    at processTicksAndRejections (native:7:39)\",\"content: Timeout 30000ms exceeded.\\nCall log:\\n\\u001b[2m  - waiting for getByText(/[0-9,.mMkK]+ followers/)\\u001b[22m\\n\\n    at <anonymous> (/home/wahyudesu/Workspace/comp-automations/ig.js:7:36)\\n    at processTicksAndRejections (native:7:39)\",\"content: Timeout 30000ms exceeded.\\nCall log:\\n\\u001b[2m  - waiting for getByText(/[0-9,.mMkK]+ followers/)\\u001b[22m\\n\\n    at <anonymous> (/home/wahyudesu/Workspace/comp-automations/ig.js:7:36)\\n    at processTicksAndRejections (native:7:39)\"],\"headers\":{},\"userData\":{},\"handledAt\":\"2026-01-15T14:08:31.373Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 3,
+	"uniqueKey": "https://www.instagram.com/techfusion.id",
+	"url": "https://www.instagram.com/techfusion.id/"
+}
