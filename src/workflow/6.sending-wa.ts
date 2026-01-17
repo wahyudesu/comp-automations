@@ -18,7 +18,7 @@ const WHATSAPP_CHANNEL_ID = "120363421736160206@g.us";
 /**
  * Send 2 random competitions with status 'whatsapp' to WhatsApp channel
  */
-export async function sendRandomToWhatsApp(env: any, limit: number = 2) {
+export async function sendRandomToWhatsApp(env: any, limit: number = 4) {
 	if (!env.DATABASE_URL) {
 		console.error("DATABASE_URL is not set");
 		return { sent: 0, skipped: 0 };
