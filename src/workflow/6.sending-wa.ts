@@ -65,7 +65,7 @@ export async function sendRandomToWhatsApp(env: any, limit: number = 2) {
 				if (level) caption += `\n🎓 ${level}`;
 				if (deadline) caption += `\n⏰ Deadline: ${deadline}`;
 				caption += `\n`;
-				if (comp.url) caption += `\n🔗 ${comp.url}`;
+				if (comp.url) caption += `\n${comp.url}`;
 
 				console.log(`Sending to WhatsApp: ${WAHA_BASE_URL}/api/sendImage`);
 				const response = await fetch(`${WAHA_BASE_URL}/api/sendImage`, {
