@@ -4,6 +4,7 @@
 - @aduptive/instagram-scraper
 - postgresql
 - r2 bucket
+- zai ai
 - mistral ocr
 - cloudflare workflows
 
@@ -78,10 +79,22 @@ flowchart TD
 ## Yg perlu diperhatikan
 - Ini adalah sistem workflow automasi yang scrapping informasi lomba dari web dan instagram untuk kemudian disimpan ke dalam r2 bucket cloudflare dan database postgres yang telah didefinisikan schemanya, nantinya data tersebut akan digunakan untuk broadcasting dan sebagai database aplikasi katalog lomba
 - Admin panel digunakan untuk mengecek dan mengupdate database postgres, yang CRUD nya juga dikorelasikan dengan cloudflare r2, mengirim pesan ke channel WA
-- CRON nya berjalan tiap 12 jam sekali, selanjutnya 6 jam sekali
-- Mekanisme data ekstraction 
-- Mekanisme pengecekan insert db nya dari url instagram jika sama,  
-- Tambahkan mekanisme edit gambar supaya ga sama sama amad sama data yg ada di instagram
-- Human review diperlukan untuk mengecek apakah ada lomba yang duplikat, mengecek informasi lomba apakah sudah benar atau belum, mengirim info ke WA channel, 
-- notif tiap data yang masuk dikirim ke grup wa
-- 
+- **Output log console**: Menampilkan sumber scraping (Web/IG), proses upload R2, status extraction, dan update database
+- CRON berjalan setiap **6 jam sekali**
+- **Mekanisme data extraction**: 2-step process
+  1. Text AI (Zai) extract dari caption/description → dapat structured data
+  2. Image AI (Mistral OCR) extract field yang kosong dari poster → fallback ke Gemini kalau gagal
+  3. Update ke database **streaming** (langsung setelah tiap record selesai, bukan batch)
+- **Mekanisme deduplication**: Cek URL Instagram dan Web. Jika URL sudah ada:
+  - Cek apakah data AI sudah diekstrak (field organizer, startDate, endDate, categories, level)
+  - Kalau belum diekstrak → lanjut proses extraction
+  - Kalau sudah lengkap → skip
+- **Mekanisme IG scrape retry**: Jika error 401 (rate limit), tunggu 5 menit dan retry terus sampai berhasil (max 10x percobaan)
+- **TODO - Mekanisme edit gambar**: Perlu ditambahkan supaya gambar tidak sama dengan data di Instagram (hindari duplicate detection)
+- **Human review**: Diperlukan untuk:
+  - Cek lomba duplikat
+  - Verifikasi informasi lomba sudah benar atau belum
+  - Kirim info ke WhatsApp channel
+- **WhatsApp notification**: Notif tiap data baru dikirim ke grup WA (currently disabled, siap diaktifkan)
+- web scrape dan ig scrape berjalan paralel
+- ig scrape terkadang gagal, maka diterapkan perulangan dengan delay 5 menit dan terulang terus menerus hingga proses berhasil

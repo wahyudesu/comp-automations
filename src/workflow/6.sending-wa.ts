@@ -1,53 +1,100 @@
 import postgres from "postgres";
 
-const WAHA_BASE_URL = process.env.WAHA_BASE_URL || "http://localhost:3000";
-const WAHA_SESSION = process.env.WAHA_SESSION || "default";
-
 interface Competition {
-	id: number;
+	id: string;
 	title: string;
 	poster: string;
-	categories: string[] | null;
 	level: string[] | null;
-	enddate: string | null;
-	registrationurl: string;
+	url: string;
+	endDate: string | null;
 }
 
-export async function sendToWhatsApp(channelChatId: string) {
-	const sql = postgres(process.env.DATABASE_URL, { ssl: "require", max: 1 });
+// Hardcoded WhatsApp configuration
+const WAHA_BASE_URL = "https://waha-qxjcatc8.sumopod.in";
+const WAHA_SESSION = "session_01jx523c9fdzcaev186szgc67h";
+const WAHA_API_KEY = "nxYLkYFvsjs6BG5j5C6cYK7KpDxuZUQg";
+const WHATSAPP_CHANNEL_ID = "120363421736160206@g.us";
+
+/**
+ * Send 2 random competitions with status 'whatsapp' to WhatsApp channel
+ */
+export async function sendRandomToWhatsApp(env: any, limit: number = 2) {
+	if (!env.DATABASE_URL) {
+		console.error("DATABASE_URL is not set");
+		return { sent: 0, skipped: 0 };
+	}
+
+	const sql = postgres(env.DATABASE_URL, { ssl: "require", max: 1 });
 
 	try {
-		const drafts = await sql<Competition[]>`SELECT id, title, poster, categories, level, enddate, registrationurl FROM competitions WHERE status = 'draft'`;
-		if (!drafts.length) return { sent: 0, skipped: 0 };
+		// Fetch random competitions with status 'draft'
+		const randomComps = await sql<Competition[]>`
+			SELECT id, title, poster, level, url, "endDate"
+			FROM competitions
+			WHERE status = 'draft'
+			ORDER BY RANDOM()
+			LIMIT ${limit}
+		`;
+
+		if (!randomComps.length) {
+			console.log("Step 6: No competitions with status 'draft' found");
+			return { sent: 0, skipped: 0 };
+		}
 
 		let sent = 0, skipped = 0;
 
-		for (const comp of drafts) {
+		for (const comp of randomComps) {
 			try {
-				const categories = Array.isArray(comp.categories) ? comp.categories.join(", ") : "-";
-				const level = Array.isArray(comp.level) ? comp.level.join(", ") : "-";
-				const deadline = comp.enddate
-					? new Date(comp.enddate).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })
-					: "-";
+				// Level: kosongin jika null/empty
+				const level =
+					Array.isArray(comp.level) && comp.level.length > 0
+						? comp.level.join(", ")
+						: "";
 
-        const caption = `*${comp.title}*\n\n`
-          + `🎓 ${level}\n`
-					+ `📂 Kategori: ${categories}\n`
-					+ `⏰ Deadline: ${deadline}\n\n`
-					+ `🔗 Daftar: ${comp.registrationurl}`;
+				// Format deadline: "20 Desember" dari "2025-12-20"
+				let deadline = "";
+				if (comp.endDate) {
+					const date = new Date(comp.endDate);
+					deadline = new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long" }).format(date);
+				}
 
-				await fetch(`${WAHA_BASE_URL}/api/sendImage`, {
+				const filename = comp.poster.split("/").pop() || "image.jpg";
+
+				// Build caption: skip baris kosong
+				let caption = `*${comp.title}*\n`;
+				if (level) caption += `\n🎓 ${level}`;
+				if (deadline) caption += `\n⏰ Deadline: ${deadline}`;
+				caption += `\n`;
+				if (comp.url) caption += `\n🔗 ${comp.url}`;
+
+				console.log(`Sending to WhatsApp: ${WAHA_BASE_URL}/api/sendImage`);
+				const response = await fetch(`${WAHA_BASE_URL}/api/sendImage`, {
 					method: "POST",
-					headers: { "Content-Type": "application/json" },
+					headers: {
+						"Content-Type": "application/json",
+						"X-Api-Key": WAHA_API_KEY,
+					},
 					body: JSON.stringify({
 						session: WAHA_SESSION,
-						chatId: channelChatId,
-						url: comp.poster,
+						chatId: WHATSAPP_CHANNEL_ID,
+						file: {
+							mimetype: "image/jpeg",
+							filename,
+							url: comp.poster,
+						},
+						reply_to: null,
 						caption,
 					}),
 				});
 
-				await sql`UPDATE competitions SET status = 'whatsapp', "updatedAt" = NOW() WHERE id = ${comp.id}`;
+				const result = await response.text();
+
+				if (!response.ok) {
+					throw new Error(`WAHA returned ${response.status}: ${result}`);
+				}
+
+				// Update status to 'published'
+				await sql`UPDATE competitions SET status = 'published', "updatedAt" = NOW() WHERE id = ${comp.id}`;
 				console.log(`✅ Sent: ${comp.title}`);
 				sent++;
 			} catch (e) {
@@ -56,13 +103,9 @@ export async function sendToWhatsApp(channelChatId: string) {
 			}
 		}
 
+		console.log(`Step 6: Sent ${sent} random competitions to WhatsApp, ${skipped} skipped`);
 		return { sent, skipped };
 	} finally {
 		await sql.end();
 	}
-}
-
-// Run
-if (process.env.WHATSAPP_CHANNEL_ID) {
-	sendToWhatsApp(process.env.WHATSAPP_CHANNEL_ID).then(r => console.log("Done:", r));
 }

@@ -4,8 +4,8 @@ const IMAGE_LIMIT = 4; // ubah sesuai kebutuhan
 const IG_LOMBA = [
   // "infolombait",
   "infolombaeventid",
-  "infolombaevent.id",
-  "pusatinfolomba"
+  // "infolombaevent.id",
+  // "pusatinfolomba"
 ];
 
 export async function scrape() {

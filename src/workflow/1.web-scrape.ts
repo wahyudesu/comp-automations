@@ -13,7 +13,7 @@ interface ScraperResult {
 }
 
 export const name = "lombait";
-const IMAGE_LIMIT = 2; // ubah sesuai kebutuhan
+const IMAGE_LIMIT = 5; // ubah sesuai kebutuhan
 
 export async function scrape(): Promise<ScraperResult> {
 	const TARGET_URL = "https://www.infolombait.com/";

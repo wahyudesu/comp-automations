@@ -4,8 +4,8 @@ const IMAGE_LIMIT = 4; // ubah sesuai kebutuhan
 const IG_LOMBA = [
   "infolomba.indonesia.id",
   "lomba_mahasiswa",
-  "infolomba",
-  "infolombamahasiswa.id",
+  // "infolomba",
+  // "infolombamahasiswa.id",
 ];
 
 export async function scrape() {
@@ -19,7 +19,7 @@ export async function scrape() {
 	});
 
 	const allPosts = [];
-	const errors: { username: string; error: string } = [];
+	const errors: { username: string; error: string }[] = [];
 
 	for (const username of usernames) {
 		try {
@@ -83,16 +83,4 @@ export async function scrape() {
 		count: allPosts.length,
 		posts: allPosts,
 	};
-}
-
-// Run directly when executed with bun
-if (import.meta.main) {
-	scrape()
-		.then((result) => {
-			console.log(`\n📊 Total posts collected: ${result.count}`);
-			// Save to JSON
-			Bun.write("ig-scrape-results.json", JSON.stringify(result.posts, null, 2));
-			console.log("💾 Results saved to ig-scrape-results.json");
-		})
-		.catch(console.error);
 }

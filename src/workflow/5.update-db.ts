@@ -39,12 +39,8 @@ export async function saveToDb(posts: any[], env: any) {
 			if (ai.contact) updates.contact = sql.json(ai.contact);
 			if (ai.prizePool) updates.prizePool = ai.prizePool;
 			if (ai.benefits) updates.benefits = ai.benefits;
-			if (ai.guideUrl) updates.guideUrl = ai.guideUrl;
 			if (ai.location) updates.location = ai.location;
 			if (ai.socialMedia) updates.socialMedia = sql.json(ai.socialMedia);
-
-			// Always update status to 'whatsapp' after AI extraction
-			updates.status = 'whatsapp';
 
 			// Update by id
 			await sql`
